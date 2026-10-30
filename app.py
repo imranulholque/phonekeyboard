@@ -218,8 +218,17 @@ class App(ctk.CTk):
         self.qr_img = None
 
         self.title("Phone Keyboard")
-        self.geometry("420x720")
-        self.resizable(False, False)
+        try:
+            sc = self._get_window_scaling()
+        except Exception:
+            sc = 1.0
+        w = 420
+        h = max(420, min(720, int(self.winfo_screenheight() / sc * 0.86)))
+        x = max(0, int((self.winfo_screenwidth() / sc - w) / 2))
+        y = max(0, int((self.winfo_screenheight() / sc - h) / 2 * 0.6))
+        self.geometry("%dx%d+%d+%d" % (w, h, x, y))
+        self.minsize(360, 420)
+        self.resizable(True, True)
         self.configure(fg_color=BG)
         self.protocol("WM_DELETE_WINDOW", self.hide)
 
@@ -239,57 +248,63 @@ class App(ctk.CTk):
 
     # ---- layout
     def _build(self):
-        ctk.CTkLabel(self, text="Phone Keyboard", font=ctk.CTkFont("Segoe UI", 26, "bold"),
-                     text_color="#eef0ff").pack(pady=(22, 2))
-        ctk.CTkLabel(self, text="Scan with your phone camera. No app needed.",
+        # bottom bar stays visible on any screen size
+        bottom = ctk.CTkFrame(self, fg_color="transparent")
+        bottom.pack(side="bottom", fill="x", pady=(4, 14))
+        inner = ctk.CTkFrame(bottom, fg_color="transparent")
+        inner.pack()
+        ctk.CTkButton(inner, text="Hide to tray", width=140, height=38, fg_color="#262e57",
+                      hover_color="#313b6e", command=self.hide).pack(side="left", padx=6)
+        ctk.CTkButton(inner, text="Quit", width=140, height=38, fg_color="#5a2433",
+                      hover_color="#7a3045", command=self.quit_app).pack(side="left", padx=6)
+
+        body = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        body.pack(fill="both", expand=True, padx=4)
+
+        ctk.CTkLabel(body, text="Phone Keyboard", font=ctk.CTkFont("Segoe UI", 26, "bold"),
+                     text_color="#eef0ff").pack(pady=(10, 2))
+        ctk.CTkLabel(body, text="Scan with your phone camera. No app needed.",
                      font=ctk.CTkFont("Segoe UI", 13), text_color=MUTED).pack()
 
-        pill = ctk.CTkFrame(self, fg_color=PANEL, corner_radius=20)
-        pill.pack(pady=14)
+        pill = ctk.CTkFrame(body, fg_color=PANEL, corner_radius=20)
+        pill.pack(pady=12)
         self.dot = ctk.CTkLabel(pill, text="●", text_color=BAD, font=ctk.CTkFont(size=14))
         self.dot.pack(side="left", padx=(14, 4), pady=6)
         self.status = ctk.CTkLabel(pill, text="Waiting for phone", text_color="#eef0ff",
                                    font=ctk.CTkFont("Segoe UI", 13))
         self.status.pack(side="left", padx=(0, 14))
 
-        card = ctk.CTkFrame(self, fg_color="white", corner_radius=18)
+        card = ctk.CTkFrame(body, fg_color="white", corner_radius=18)
         card.pack(pady=4)
         self.qr_label = ctk.CTkLabel(card, text="")
-        self.qr_label.pack(padx=14, pady=14)
+        self.qr_label.pack(padx=12, pady=12)
 
-        self.url_label = ctk.CTkLabel(self, text="", text_color=MUTED, wraplength=380,
+        self.url_label = ctk.CTkLabel(body, text="", text_color=MUTED, wraplength=360,
                                       font=ctk.CTkFont("Consolas", 12))
-        self.url_label.pack(pady=(12, 0))
-        ctk.CTkButton(self, text="Copy link", width=110, height=30, fg_color=PANEL,
+        self.url_label.pack(pady=(10, 0))
+        ctk.CTkButton(body, text="Copy link", width=110, height=30, fg_color=PANEL,
                       hover_color="#232b55", command=self.copy_link).pack(pady=8)
 
-        row = ctk.CTkFrame(self, fg_color=PANEL, corner_radius=14)
-        row.pack(padx=24, pady=8, fill="x")
-        ctk.CTkLabel(row, text="Port", text_color=MUTED).pack(side="left", padx=(16, 8), pady=12)
-        self.port_entry = ctk.CTkEntry(row, width=80, justify="center", fg_color="#0e1226",
+        row = ctk.CTkFrame(body, fg_color=PANEL, corner_radius=14)
+        row.pack(padx=16, pady=6)
+        ctk.CTkLabel(row, text="Port", text_color=MUTED).pack(side="left", padx=(14, 8), pady=10)
+        self.port_entry = ctk.CTkEntry(row, width=70, justify="center", fg_color="#0e1226",
                                        border_width=0)
         self.port_entry.insert(0, str(self.cfg["port"]))
         self.port_entry.pack(side="left")
-        ctk.CTkButton(row, text="Apply", width=64, fg_color=ACCENT, text_color="#0e1226",
-                      hover_color="#a3afff", command=self.apply_port).pack(side="left", padx=8)
-        ctk.CTkButton(row, text="Random", width=70, fg_color="#262e57", hover_color="#313b6e",
-                      command=self.random_port).pack(side="left")
-        self.msg = ctk.CTkLabel(self, text="Ports 6000 to 6999", text_color=MUTED,
+        ctk.CTkButton(row, text="Apply", width=58, fg_color=ACCENT, text_color="#0e1226",
+                      hover_color="#a3afff", command=self.apply_port).pack(side="left", padx=6)
+        ctk.CTkButton(row, text="Random", width=64, fg_color="#262e57", hover_color="#313b6e",
+                      command=self.random_port).pack(side="left", padx=(0, 12))
+        self.msg = ctk.CTkLabel(body, text="Ports 6000 to 6999", text_color=MUTED,
                                 font=ctk.CTkFont("Segoe UI", 12))
         self.msg.pack()
 
-        ctk.CTkButton(self, text="Make a new QR code", fg_color="transparent", border_width=1,
+        ctk.CTkButton(body, text="Make a new QR code", fg_color="transparent", border_width=1,
                       border_color="#2b3466", hover_color=PANEL, text_color=MUTED,
                       command=self.new_token).pack(pady=(10, 4))
-
-        bottom = ctk.CTkFrame(self, fg_color="transparent")
-        bottom.pack(side="bottom", pady=18)
-        ctk.CTkButton(bottom, text="Hide to tray", width=140, height=38, fg_color="#262e57",
-                      hover_color="#313b6e", command=self.hide).pack(side="left", padx=6)
-        ctk.CTkButton(bottom, text="Quit", width=140, height=38, fg_color="#5a2433",
-                      hover_color="#7a3045", command=self.quit_app).pack(side="left", padx=6)
-        ctk.CTkLabel(self, text="Runs at startup. Turn that on or off in\nTask Manager > Startup apps.",
-                     text_color=MUTED, font=ctk.CTkFont("Segoe UI", 12)).pack(side="bottom")
+        ctk.CTkLabel(body, text="Runs at startup. Turn that on or off in\nTask Manager > Startup apps.",
+                     text_color=MUTED, font=ctk.CTkFont("Segoe UI", 12)).pack(pady=(6, 10))
 
     # ---- actions
     def url(self):
@@ -301,8 +316,8 @@ class App(ctk.CTk):
         qr.add_data(url)
         qr.make(fit=True)
         img = qr.make_image(fill_color="#11152b", back_color="white").convert("RGB")
-        img = img.resize((270, 270), Image.NEAREST)
-        self.qr_img = ctk.CTkImage(light_image=img, dark_image=img, size=(270, 270))
+        img = img.resize((230, 230), Image.NEAREST)
+        self.qr_img = ctk.CTkImage(light_image=img, dark_image=img, size=(230, 230))
         self.qr_label.configure(image=self.qr_img)
         self.url_label.configure(text="http://%s:%d" % (self.ip, self.cfg["port"]))
 
