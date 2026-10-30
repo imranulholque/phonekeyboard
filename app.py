@@ -168,13 +168,13 @@ def make_handler(state):
 
 class Server:
     def __init__(self, state):
-        self.state = state
+        self.shared = state
         self.httpd = None
 
     def start(self, port):
         self.stop()
         try:
-            self.httpd = QuietServer(("0.0.0.0", port), make_handler(self.state))
+            self.httpd = QuietServer(("0.0.0.0", port), make_handler(self.shared))
         except OSError:
             self.httpd = None
             return False
@@ -212,8 +212,8 @@ class App(ctk.CTk):
         super().__init__()
         ctk.set_appearance_mode("dark")
         self.cfg = cfg
-        self.state = State(cfg["token"])
-        self.server = Server(self.state)
+        self.shared = State(cfg["token"])
+        self.server = Server(self.shared)
         self.ip = get_ip()
         self.qr_img = None
 
@@ -229,8 +229,8 @@ class App(ctk.CTk):
         self.refresh_qr()
 
         self.tray = pystray.Icon(APP_NAME, make_tray_icon(), "Phone Keyboard", pystray.Menu(
-            pystray.MenuItem("Open", lambda: self.state.events.put("show"), default=True),
-            pystray.MenuItem("Quit", lambda: self.state.events.put("quit"))))
+            pystray.MenuItem("Open", lambda: self.shared.events.put("show"), default=True),
+            pystray.MenuItem("Quit", lambda: self.shared.events.put("quit"))))
         self.tray.run_detached()
 
         if background:
@@ -353,7 +353,7 @@ class App(ctk.CTk):
 
     def new_token(self):
         self.cfg["token"] = secrets.token_urlsafe(12)
-        self.state.token = self.cfg["token"]
+        self.shared.token = self.cfg["token"]
         save_cfg(self.cfg)
         self.refresh_qr()
         self.say("Old QR codes no longer work", OK)
@@ -378,7 +378,7 @@ class App(ctk.CTk):
     def poll(self):
         try:
             while True:
-                ev = self.state.events.get_nowait()
+                ev = self.shared.events.get_nowait()
                 if ev == "show":
                     self.show()
                 elif ev == "quit":
@@ -389,7 +389,7 @@ class App(ctk.CTk):
         if ip != self.ip:
             self.ip = ip
             self.refresh_qr()
-        if time.time() - self.state.last_seen < 8:
+        if time.time() - self.shared.last_seen < 8:
             self.dot.configure(text_color=OK)
             self.status.configure(text="Phone connected")
         else:
