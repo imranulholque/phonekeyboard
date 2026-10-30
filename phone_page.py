@@ -108,12 +108,21 @@ PAGE = r"""<!doctype html>
     stext.textContent = v ? 'Connected' : 'Reconnecting…';
   }
   function post(path, body){ queue.push([path, body]); pump(); }
+  function merge(a, b){            // join two input jobs into one request
+    var t = a.text, back = a.back;
+    if (b.back <= t.length) t = t.slice(0, t.length - b.back) + b.text;
+    else { back += b.back - t.length; t = b.text; }
+    return {back: back, text: t};
+  }
   function pump(){
     if (busy || !queue.length) return;
     busy = true;
     var job = queue.shift();
+    while (queue.length && job[0] === '/api/input' && queue[0][0] === '/api/input'){
+      job = ['/api/input', merge(job[1], queue.shift()[1])];
+    }
     fetch(job[0], {method:'POST', headers:{'Content-Type':'application/json','X-Token':TOKEN},
-                   body: JSON.stringify(job[1]), keepalive:true})
+                   body: JSON.stringify(job[1])})
       .then(function(r){ setOnline(r.ok); })
       .catch(function(){ setOnline(false); })
       .finally(function(){ busy = false; pump(); });
