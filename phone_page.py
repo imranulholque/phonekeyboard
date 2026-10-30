@@ -4,90 +4,134 @@ PAGE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#11152b">
+<meta name="theme-color" content="#e9edf4">
+<meta name="color-scheme" content="light dark">
 <title>Phone Keyboard</title>
 <style>
   :root{
-    --bg:#11152b; --panel:#181e3b; --key:#262e57; --key-edge:#141937; --key-hi:#313b6e;
-    --text:#eef0ff; --muted:#9aa3d6; --accent:#8b9bff; --ok:#5eead4; --bad:#ff7a8a;
+    --bg:#e9edf4; --bg2:#f6f8fc; --card:#ffffff; --ink:#18202f; --muted:#6b7488;
+    --key:#ffffff; --key-edge:#c5ccda; --key-shadow:rgba(30,45,90,.10);
+    --field:#f1f4f9; --accent:#3556ff; --accent-edge:#2038c4; --accent-ink:#ffffff;
+    --ok:#12b886; --bad:#f06a6a; --chip:#dde3ef; --on:#18202f; --on-ink:#ffffff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1017; --bg2:#151a24; --card:#171c27; --ink:#eef1f8; --muted:#8c96ad;
+      --key:#262d3d; --key-edge:#0a0d13; --key-shadow:rgba(0,0,0,.35);
+      --field:#0f131b; --accent:#6c85ff; --accent-edge:#3a4fd0; --accent-ink:#0b1030;
+      --chip:#20273a; --on:#eef1f8; --on-ink:#0d1017;
+    }
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;overscroll-behavior:none}
-  body{display:flex;flex-direction:column;gap:12px;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
-    background:radial-gradient(120% 60% at 50% 0%,#1d2450 0%,var(--bg) 60%)}
-  header{display:flex;align-items:center;justify-content:space-between}
-  h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.2px}
-  .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);
-    background:var(--panel);padding:6px 12px;border-radius:999px}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--bad);transition:background .2s}
-  .on .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .card{background:var(--panel);border-radius:18px;padding:12px;border:1px solid #232b55}
-  .card label{display:block;font-size:13px;color:var(--muted);margin:0 2px 8px}
-  textarea{width:100%;height:112px;resize:none;border:0;outline:0;border-radius:12px;
-    background:#0e1226;color:var(--text);font:inherit;font-size:18px;line-height:1.4;padding:12px;
-    caret-color:var(--accent)}
-  textarea:focus{box-shadow:0 0 0 2px var(--accent)}
-  .row{display:grid;gap:8px}
-  .mods{grid-template-columns:repeat(4,1fr)}
-  .keys{grid-template-columns:repeat(4,1fr)}
-  .keys .w2{grid-column:span 2}
-  button{font:inherit;color:var(--text);border:0;border-radius:12px;min-height:46px;font-size:15px;font-weight:600;
-    background:linear-gradient(var(--key-hi),var(--key));border-bottom:3px solid var(--key-edge);
-    touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .05s}
-  button:active{transform:translateY(2px);border-bottom-width:1px;margin-top:2px}
-  button.mod{background:var(--panel);border:1px solid #2b3466;border-bottom-width:3px;color:var(--muted)}
-  button.mod.active{background:var(--accent);color:#0e1226;border-color:var(--accent)}
-  button.go{background:var(--accent);color:#0e1226;border-bottom-color:#5566d6}
-  .hint{font-size:12px;color:var(--muted);text-align:center;margin-top:auto;padding-top:4px}
-  .scroll{overflow-y:auto;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+  html{height:100%}
+  html,body{margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+  body{height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:14px;
+    padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+    background:linear-gradient(var(--bg2),var(--bg) 55%)}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:2px 4px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.1px}
+  .logo{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center}
+  .logo svg{width:18px;height:18px;fill:none;stroke:var(--accent-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .status{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);
+    background:var(--card);padding:7px 12px;border-radius:999px;box-shadow:0 1px 0 var(--key-edge)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--bad)}
+  .on .dot{background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 22%,transparent)}
+  .on{color:var(--ink)}
+
+  header,.chips,.pad{flex:none}
+  .field{flex:1;min-height:110px;display:flex;flex-direction:column;background:var(--card);border-radius:22px;padding:14px 16px 12px;
+    box-shadow:0 1px 0 var(--key-edge),0 10px 24px var(--key-shadow)}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+  textarea{width:100%;flex:1;min-height:0;resize:none;border:0;outline:0;background:transparent;color:var(--ink);
+    font:inherit;font-size:22px;line-height:1.35;padding:0;caret-color:var(--accent)}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:2px 14px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;min-height:40px;padding:0 16px;border-radius:999px;font-size:14px;background:var(--chip);color:var(--ink);
+    box-shadow:none;border:0}
+  .chip:active{transform:scale(.96)}
+
+  .pad{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+  .grid2{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;align-items:stretch}
+  .dpad{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:8px}
+  .dpad .up{grid-column:2;grid-row:1} .dpad .left{grid-column:1;grid-row:2}
+  .dpad .down{grid-column:2;grid-row:2} .dpad .right{grid-column:3;grid-row:2}
+  .misc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .mods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .bottom{display:grid;grid-template-columns:1fr 1.7fr 1.3fr;gap:8px}
+
+  button{font:inherit;font-weight:600;font-size:15px;color:var(--ink);border:0;border-radius:16px;min-height:52px;
+    background:var(--key);box-shadow:0 3px 0 var(--key-edge),0 8px 14px var(--key-shadow);
+    display:grid;place-items:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+    transition:transform .05s,box-shadow .05s}
+  button:active{transform:translateY(3px);box-shadow:0 0 0 var(--key-edge),0 2px 4px var(--key-shadow)}
+  button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .small{min-height:44px;font-size:14px;border-radius:14px}
+  .mod{background:var(--chip);box-shadow:none;color:var(--muted);min-height:42px;border-radius:14px;font-size:14px}
+  .mod:active{transform:scale(.97);box-shadow:none}
+  .mod.active{background:var(--on);color:var(--on-ink)}
+  .primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 3px 0 var(--accent-edge),0 8px 14px var(--key-shadow)}
+  .primary:active{box-shadow:0 0 0 var(--accent-edge),0 2px 4px var(--key-shadow)}
+  .space{color:var(--muted)}
 </style>
 </head>
 <body>
 <header>
-  <h1>Phone Keyboard</h1>
-  <div class="status" id="status"><span class="dot"></span><span id="stext">Connecting…</span></div>
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/></svg></div>
+    Phone Keyboard
+  </div>
+  <div class="status" id="status"><span class="dot"></span><span id="stext">Connecting</span></div>
 </header>
 
-<div class="scroll">
-  <div class="card">
-    <label for="ta">Type here and it appears on your PC</label>
-    <textarea id="ta" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
-  </div>
+<div class="field">
+  <label for="ta">Typing on your PC</label>
+  <textarea id="ta" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+</div>
 
-  <div class="row mods" id="mods">
+<div class="chips">
+  <button class="chip" data-combo="c">Copy</button>
+  <button class="chip" data-combo="v">Paste</button>
+  <button class="chip" data-combo="x">Cut</button>
+  <button class="chip" data-combo="z">Undo</button>
+  <button class="chip" data-combo="y">Redo</button>
+  <button class="chip" data-combo="a">Select all</button>
+  <button class="chip" data-combo="s">Save</button>
+  <button class="chip" data-combo="f">Find</button>
+</div>
+
+<div class="pad">
+  <div class="mods">
     <button class="mod" data-mod="ctrl">Ctrl</button>
     <button class="mod" data-mod="alt">Alt</button>
     <button class="mod" data-mod="shift">Shift</button>
     <button class="mod" data-mod="win">Win</button>
   </div>
 
-  <div class="row keys">
-    <button data-key="esc">Esc</button>
-    <button data-key="tab">Tab</button>
-    <button data-key="backspace" data-repeat>⌫</button>
-    <button data-key="delete" data-repeat>Del</button>
-
-    <button data-key="home">Home</button>
-    <button data-key="up" data-repeat>↑</button>
-    <button data-key="end">End</button>
-    <button data-key="pageup">PgUp</button>
-
-    <button data-key="left" data-repeat>←</button>
-    <button data-key="down" data-repeat>↓</button>
-    <button data-key="right" data-repeat>→</button>
-    <button data-key="pagedown">PgDn</button>
-
-    <button data-combo="c">Copy</button>
-    <button data-combo="v">Paste</button>
-    <button data-combo="x">Cut</button>
-    <button data-combo="z">Undo</button>
-
-    <button data-combo="a">Select all</button>
-    <button data-key="enter" class="go w2" data-repeat>Enter ↵</button>
-    <button data-key="space" data-repeat>Space</button>
+  <div class="grid2">
+    <div class="dpad">
+      <button class="up" data-key="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+      <button class="left" data-key="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="down" data-key="down" data-repeat aria-label="Down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="right" data-key="right" data-repeat aria-label="Right"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="misc">
+      <button class="small" data-key="esc">Esc</button>
+      <button class="small" data-key="tab">Tab</button>
+      <button class="small" data-key="delete" data-repeat>Del</button>
+      <button class="small" data-key="home">Home</button>
+      <button class="small" data-key="end">End</button>
+      <button class="small" data-key="pageup">PgUp</button>
+    </div>
   </div>
-  <div class="hint">Tap a modifier, then type a letter to send shortcuts like Ctrl+S.</div>
+
+  <div class="bottom">
+    <button data-key="backspace" data-repeat aria-label="Backspace"><svg viewBox="0 0 24 24"><path d="M9 5h11a1 1 0 011 1v12a1 1 0 01-1 1H9l-6-7z"/><path d="M13 9.5l5 5M18 9.5l-5 5"/></svg></button>
+    <button class="space" data-key="space" data-repeat>Space</button>
+    <button class="primary" data-key="enter" data-repeat aria-label="Enter"><svg viewBox="0 0 24 24"><path d="M20 5v6a3 3 0 01-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg></button>
+  </div>
 </div>
 
 <script>
@@ -100,12 +144,13 @@ PAGE = r"""<!doctype html>
   var prev = '', composing = false;
   var mods = {ctrl:false, alt:false, shift:false, win:false};
 
+  function buzz(){ if (navigator.vibrate) navigator.vibrate(6); }
+
   /* ---- ordered send queue (keeps keystrokes in order) ---- */
-  var queue = [], busy = false, online = false;
+  var queue = [], busy = false;
   function setOnline(v){
-    online = v;
     statusEl.classList.toggle('on', v);
-    stext.textContent = v ? 'Connected' : 'Reconnecting…';
+    stext.textContent = v ? 'Connected' : 'Reconnecting';
   }
   function post(path, body){ queue.push([path, body]); pump(); }
   function merge(a, b){            // join two input jobs into one request
@@ -154,7 +199,7 @@ PAGE = r"""<!doctype html>
     if (am.length && back === 0 && added.length === 1){
       post('/api/key', {key: added.toLowerCase(), mods: am});
       clearMods();
-      ta.value = prev;                      // keep the box unchanged
+      ta.value = prev;
       var n = ta.value.length; ta.setSelectionRange(n, n);
       return;
     }
@@ -176,6 +221,7 @@ PAGE = r"""<!doctype html>
     var timer = null, rep = null;
     function stop(){ clearTimeout(timer); clearInterval(rep); }
     function fire(){
+      buzz();
       if (btn.dataset.mod){
         mods[btn.dataset.mod] = !mods[btn.dataset.mod];
         btn.classList.toggle('active', mods[btn.dataset.mod]);
@@ -205,6 +251,7 @@ PAGE = r"""<!doctype html>
 """
 
 DENIED = """<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">
-<body style="font-family:system-ui;background:#11152b;color:#eef0ff;display:grid;place-items:center;height:100vh;margin:0;text-align:center;padding:24px">
-<div><h2>Scan the QR code again</h2><p style="color:#9aa3d6">This link is missing its access key. Open Phone Keyboard on your PC and scan the code shown there.</p></div>
+<meta name="color-scheme" content="light dark">
+<body style="font-family:system-ui;display:grid;place-items:center;height:100vh;margin:0;text-align:center;padding:24px">
+<div><h2>Scan the QR code again</h2><p style="opacity:.65">This link is missing its access key. Open Phone Keyboard on your PC and scan the code shown there.</p></div>
 """
