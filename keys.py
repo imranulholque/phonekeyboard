@@ -50,6 +50,11 @@ SPECIAL = {
     "home": (0x24, True), "end": (0x23, True),
     "pageup": (0x21, True), "pagedown": (0x22, True),
 }
+SPECIAL.update({
+    "capslock": (0x14, False), "printscreen": (0x2C, True),
+    "mute": (0xAD, False), "voldown": (0xAE, False), "volup": (0xAF, False),
+    "nexttrack": (0xB0, False), "prevtrack": (0xB1, False), "playpause": (0xB3, False),
+})
 for _i in range(1, 13):
     SPECIAL["f%d" % _i] = (0x6F + _i, False)
 
